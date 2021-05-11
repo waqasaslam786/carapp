@@ -95,7 +95,7 @@
                             <div class="col-md-4">
                                 <div class="form-outline mb-4">
                                     <label for=""> Name </label>
-                                    <input type="text" name="name" class="form-control @error('name') border-danger @enderror " placeholder="Car Name" value="@isset($car){{$car->name}}@endisset"/>
+                                    <input type="text" name="name" class="form-control @error('name') border-danger @enderror " placeholder="Car Name" value="@if(isset($car)){{$car->name}}@else{{old('name')}}@endif"/>
                                     @error('name')
                                     <div class="text-danger">
                                         {{$message}}
@@ -108,13 +108,8 @@
                                 <select name="brand_id" id="brand_id" class="form-control @error('brand_id') border-danger @enderror">
                                     <option value=""> Select Brand </option>
                                     @foreach ($brands as $brand)
-                                        <option value="{{$brand->id}}"
-                                        @isset($car)
-                                        @if($brand->id==$car->brand_id)
-                                        {{'selected'}}
-                                        @endif
-                                        @endisset >{{$brand->name}}</option>
-                                    @endforeach
+                                        <option value="{{$brand->id}}" @if(isset($car) && ($car->brand_id==$brand->id)) {{'selected'}} @else @if(old('brand_id')==$brand->id) {{'selected'}} @endif @endif >{{$brand->name}}</option>
+                                    @endforeach    
                                 </select>
                                 @error('brand_id')
                                 <div class="text-danger">
@@ -127,12 +122,7 @@
                                 <select name="car_modal_id" id="modal_id" class="form-control @error('car_modal_id') border-danger @enderror">
                                     <option value="">Select Car Modal </option>
                                     @foreach ($modals as $modal)
-                                        <option value="{{$modal->id}}"
-                                        @isset($car)
-                                        @if($modal->id==$car->car_modal_id)
-                                        {{'selected'}}
-                                        @endif
-                                        @endisset >{{$modal->name}}</option>
+                                        <option value="{{$modal->id}}" @if(isset($car) && ($car->car_modal_id==$modal->id)) {{'selected'}} @else @if(old('car_modal_id')==$modal->id){{'selected'}} @endif @endif >{{$modal->name}}</option>
                                     @endforeach
                                 </select>
                                 @error('car_modal_id')
@@ -146,27 +136,9 @@
                                 <label for="">Colors</label>
                                 <select name="color" id="color_id" class="form-control @error('color') border-danger @enderror">
                                     <option value=""> Select Color </option>
-                                    <option value="Red"
-                                    @isset($car)
-                                    @if ($car->color=='Red')
-                                    {{'selected'}}
-                                    @endif
-                                    @endisset 
-                                    >Red</option>
-                                    <option value="white"
-                                    @isset($car)
-                                    @if ($car->color=='white')
-                                    {{'selected'}}
-                                    @endif
-                                    @endisset
-                                    >White</option>
-                                    <option value="Black"
-                                    @isset($car)
-                                    @if ($car->color=='Black')
-                                    {{'selected'}}
-                                    @endif
-                                    @endisset
-                                    >Black</option>
+                                    <option value="Red" @if(isset($car) && ($car->color=='Red')) {{'selected'}} @else @if (old('color')=='Red'){{'selected'}} @endif @endif >Red</option>
+                                    <option value="white" @if(isset($car) && ($car->color=='white')) {{'selected'}} @else @if(old('color')=='white') {{'selected'}}@endif @endif >White</option>
+                                    <option value="Black" @if(isset($car) && ($car->color=='Black')) {{'selected'}} @else @if(old('color')=='Black') {{'selected'}}@endif @endif>Black</option>
                                 </select>
                                 @error('color')
                                 <div class="text-danger">
@@ -176,7 +148,7 @@
                             </div>
                             <div class="col-md-4">
                                 <label for="">Years</label>
-                                <input type="text" name="year" class="form-control" id="datepicker" @error('year') border-danger @enderror value="@isset($car){{$car->year}}@endisset"  >
+                                <input type="text" name="year" class="form-control" id="datepicker" @error('year') border-danger @enderror value="@if(isset($car)){{$car->year}}@else{{old('year')}}@endif" >
                                 @error('year')
                                 <div class="text-danger">
                                     {{$message}}
@@ -196,6 +168,7 @@
                                         <div></div>
                                         <input type="file" name="images" class="image crop_data @error('images') border-danger @enderror" id="upload_image" value="">
                                     </label>
+                                    <button type="button" class="btn btn-primary btn-sm crop-button" style="display: none"  onclick="showmodal()"> Crop Image </button>
                                 </div>
                                 @error('images')
                                 <div class="text-danger">
@@ -330,8 +303,8 @@ $(document).ready(function(){
     var cropper;
 
     $('#upload_image').change(function(event){
-        $('#uploaded_image').attr('src', "");
         var files = event.target.files;
+        $('.crop-button').hide();
 
         var done = function(url){
             image.src = url;
@@ -365,6 +338,8 @@ $(document).ready(function(){
             width:400,
             height:400
         });
+        $('.crop-button').show();
+        $('#uploaded_image').attr('src', "");
 
         canvas.toBlob(function(blob){
             
@@ -376,26 +351,15 @@ $(document).ready(function(){
                 var test=$('#tester').val(base64data);
                 $modal.modal('hide');
 				$('#uploaded_image').attr('src', base64data);
-
-                // dataNew = new FormData();
-                // dataNew.append('image',base64data);           
-				// $.ajax({
-				// 	url:'../getImage/',
-				// 	method:'GET',
-                //     dataType: 'json',
-                //     data: {'_token': $('meta[name="_token"]').attr('content'), 'image': base64data},
-				// 	// data:{image:base64data},
-				// 	success:function(data)
-				// 	{
-				// 		$modal.modal('hide');
-				// 		$('#uploaded_image').attr('src', data);
-				// 	}
-				// });
-                
             };
         });
     });
 });
+
+function showmodal()
+{
+    $('#modal').modal('show');
+}
 
 // Enf of Cropper Image
 </script>
